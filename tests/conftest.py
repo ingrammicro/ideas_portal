@@ -4,12 +4,15 @@ from collections.abc import Iterable
 from types import MethodType
 from urllib.parse import parse_qs
 
-import pytest
-import requests
-import responses
+from connect.client import ConnectClient
+
 from jwt import encode
 
-from connect.client import ConnectClient
+import pytest
+
+import requests
+
+import responses
 
 
 ConnectResponse = namedtuple(
@@ -57,18 +60,14 @@ def _mock_kwargs_generator(response_iterator, url):
     mock_kwargs = {
         'match_querystring': False,
     }
-    if res.count is not None:
-        end = 0 if res.count == 0 else res.count - 1
-        mock_kwargs['status'] = 200
-        mock_kwargs['headers'] = {'Content-Range': f'items 0-{end}/{res.count}'}
-        mock_kwargs['json'] = []
+
     if isinstance(res.value, Iterable):
         count = len(res.value)
         end = 0 if count == 0 else count - 1
         mock_kwargs['status'] = 200
         mock_kwargs['json'] = res.value
         mock_kwargs['headers'] = {
-            'Content-Range': f'items 0-{end}/{count}'
+            'Content-Range': f'items 0-{end}/{count}',
         }
     elif isinstance(res.value, dict):
         mock_kwargs['status'] = res.status or 200
@@ -81,7 +80,7 @@ def _mock_kwargs_generator(response_iterator, url):
     else:
         mock_kwargs['status'] = res.status or 200
         mock_kwargs['body'] = str(res.value)
-    
+
     return mock_kwargs
 
 
@@ -147,32 +146,35 @@ def product_action_request_factory():
     def _product_action_request_factory(method, connect_secret):
         jwt_payload = {
             'exp': time.time(),
-            'asset_id':'AS-7461-6002-1062'
+            'asset_id': 'AS-7461-6002-1062',
         }
 
         connect_token = encode(jwt_payload, connect_secret)
         return {
             'method': method,
-            'querystring': {'jwt': [connect_token, ]},
+            'querystring': {'jwt': [connect_token]},
             'form_data': {
                 'email': 'john.doe@example.com',
                 'givenName': 'John',
-                'familyName': 'Doe'
+                'familyName': 'Doe',
             },
-            'jwt_payload': jwt_payload
-        }    
+            'jwt_payload': jwt_payload,
+        }
     return _product_action_request_factory
 
 
 @pytest.fixture
 def product_action_config_factory():
-    def _product_action_request_factory(aha_login_url='https://imc.ideas.aha.io/auth/jwt/callback/', connect_secret="SECRET_KEY"):
+    def _product_action_request_factory(
+        aha_login_url='https://imc.ideas.aha.io/auth/jwt/callback/',
+        connect_secret="SECRET_KEY",
+    ):
         return {
-            'AHA_LOGIN_URL': aha_login_url, 
+            'AHA_LOGIN_URL': aha_login_url,
             'AHA_JWT_SECRET': "AHA_SECRET_KEY",
             'CONNECT_JWT_SECRET': connect_secret,
             'TOKEN_EXP_MINUTES': 1,
             'DEFAULT_REDIRECT': 'https://ingrammicrocloud.com',
-            'APPROVED_TEMPLATE_ID': "approved-temp-id"
+            'APPROVED_TEMPLATE_ID': "approved-temp-id",
         }
-    return _product_action_request_factory    
+    return _product_action_request_factory
