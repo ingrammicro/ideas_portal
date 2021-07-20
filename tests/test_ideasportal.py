@@ -46,33 +46,25 @@ def test_process_asset_purchase_request_raise_error(
         assert '400 Bad Request' in excinfo.value
 
 
+@pytest.mark.parametrize(
+    "request_method,redirect_url_key,query_string_pattern", 
+    [("POST", "AHA_LOGIN_URL", "\\?jwt=*"), 
+    ("GET", "DEFAULT_REDIRECT", "")])
 def test_process_product_action(
     logger,
     product_action_request_factory,
-    product_action_config_factory
-):
-    config = product_action_config_factory()
-
-    aha_login_url = config['AHA_LOGIN_URL']
-    request = product_action_request_factory('POST', config['CONNECT_JWT_SECRET'])
-    ext = IdeasPortalExtension(None, logger, config)
-    
-    result = ext.execute_product_action(request)
-    assert result.status == 'success'
-    assert result.http_status == 302
-    assert re.match(re.compile(f'{aha_login_url}\\?jwt=.+'), result.headers['Location'])
-
-
-def test_process_product_action_get_method(
-    logger,
     product_action_config_factory,
-    product_action_request_factory
+    request_method,
+    redirect_url_key,
+    query_string_pattern
 ):
     config = product_action_config_factory()
-    request = product_action_request_factory('GET', config['CONNECT_JWT_SECRET'])
+    
+    request = product_action_request_factory(request_method, config['CONNECT_JWT_SECRET'])
     ext = IdeasPortalExtension(None, logger, config)
     
     result = ext.execute_product_action(request)
+    redirect_url = config[redirect_url_key]
     assert result.status == 'success'
     assert result.http_status == 302
-    assert re.match(re.compile(config['DEFAULT_REDIRECT']), result.headers['Location'])
+    assert re.match(re.compile(f'{redirect_url}{query_string_pattern}'), result.headers['Location'])
