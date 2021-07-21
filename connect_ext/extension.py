@@ -59,10 +59,13 @@ class IdeasPortalExtension(Extension):
             aha_token = self._calculate_aha_token(request)
             aha_login_url = self.config['AHA_LOGIN_URL']
             location = f"{aha_login_url}?jwt={aha_token}"
+            self.logger.info(
+                f'Action {action_id} for asset {asset_id} redirecting to aha login',
+            )
         else:
             location = self.config.get('DEFAULT_REDIRECT', self.DEFAULT_REDIRECT)
+            self.logger.info(
+                f'Action {action_id} for asset {asset_id} redirecting to default site',
+            )
 
-        self.logger.info(
-            f'Action {action_id} for asset {asset_id} redirecting to location {location}',
-        )
         return ProductActionResponse.done(http_status=302, headers={'Location': location})
