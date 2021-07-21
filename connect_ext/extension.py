@@ -11,20 +11,23 @@ from connect.eaas.extension import (
     ProductActionResponse,
 )
 
-from jwt import decode, encode
+from jwt import encode
 
 
 class IdeasPortalExtension(Extension):
+
+    DEFAULT_REDIRECT = 'https://ingrammicrocloud.com'
+    DEFAULT_EXPIRATION_MINUTES = 1
+
     def _calculate_aha_token(self, request):
         data = request['form_data']
-        connect_token = request['querystring']['jwt'][0]
-        jwt_decoded = decode(connect_token, self.config['CONNECT_JWT_SECRET'], algorithms='HS256')
-
-        expiration_mins = int(self.config.get("TOKEN_EXP_MINUTES", 1))
+        jwt_payload = request['jwt_payload']
+        expiration_mins = self.config.get("TOKEN_EXP_MINUTES")
+        expiration_mins = expiration_mins if expiration_mins else self.DEFAULT_EXPIRATION_MINUTES
 
         payload = {}
         payload['iat'] = int(time.time())
-        payload['jti'] = jwt_decoded['asset_id']
+        payload['jti'] = jwt_payload['asset_id']
         payload['first_name'] = data['givenName']
         payload['last_name'] = data['familyName']
         payload['email'] = data['email']
@@ -48,17 +51,18 @@ class IdeasPortalExtension(Extension):
             raise ex
 
     def execute_product_action(self, request):
-        self.logger.info(f'Product action: {request}')
+        asset_id = request['jwt_payload']['asset_id']
+        action_id = request['jwt_payload']['action_id']
+        self.logger.info(f'Starting {action_id} for asset with id {asset_id}')
 
-        if request['method'] == 'GET':
-            return ProductActionResponse.done(
-                http_status=302,
-                headers={'Location': self.config['DEFAULT_REDIRECT']},
-            )
+        if request['method'] == 'POST':
+            aha_token = self._calculate_aha_token(request)
+            aha_login_url = self.config['AHA_LOGIN_URL']
+            location = f"{aha_login_url}?jwt={aha_token}"
+        else:
+            location = self.config.get('DEFAULT_REDIRECT', self.DEFAULT_REDIRECT)
 
-        aha_token = self._calculate_aha_token(request)
-        aha_login_url = self.config['AHA_LOGIN_URL']
-        return ProductActionResponse.done(
-            http_status=302,
-            headers={'Location': f"{aha_login_url}?jwt={aha_token}"},
+        self.logger.info(
+            f'Action {action_id} for asset {asset_id} redirecting to location {location}',
         )
+        return ProductActionResponse.done(http_status=302, headers={'Location': location})

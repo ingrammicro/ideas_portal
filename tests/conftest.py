@@ -143,13 +143,14 @@ def sync_client_factory():
 
 @pytest.fixture
 def product_action_request_factory():
-    def _product_action_request_factory(method, connect_secret):
+    def _product_action_request_factory(method):
         jwt_payload = {
             'exp': time.time(),
-            'asset_id': 'AS-7461-6002-1062',
+            'asset_id': 'AS-1111-2222-3333',
+            'action_id': 'sso_action'
         }
 
-        connect_token = encode(jwt_payload, connect_secret)
+        connect_token = encode(jwt_payload, "THE_SECRET")
         return {
             'method': method,
             'querystring': {'jwt': [connect_token]},
@@ -165,14 +166,10 @@ def product_action_request_factory():
 
 @pytest.fixture
 def product_action_config_factory():
-    def _product_action_request_factory(
-        aha_login_url='https://imc.ideas.aha.io/auth/jwt/callback/',
-        connect_secret="SECRET_KEY",
-    ):
+    def _product_action_request_factory():
         return {
-            'AHA_LOGIN_URL': aha_login_url,
+            'AHA_LOGIN_URL': 'https://imc.ideas.aha.io/auth/jwt/callback/',
             'AHA_JWT_SECRET': "AHA_SECRET_KEY",
-            'CONNECT_JWT_SECRET': connect_secret,
             'TOKEN_EXP_MINUTES': 1,
             'DEFAULT_REDIRECT': 'https://ingrammicrocloud.com',
             'APPROVED_TEMPLATE_ID': "approved-temp-id",

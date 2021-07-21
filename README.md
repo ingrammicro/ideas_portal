@@ -4,6 +4,15 @@
 Project description
 
 
+## Service configuration
+
+### Enviroment variables
+
+* TOKEN_EXP_MINUTES: By default token's expiration is set in one minute. But we can change it by setting this variable. Units = minutes.
+* DEFAULT_REDIRECT: By default is set to ingrammicrocloud.com
+* AHA_JWT_SECRET: Needs to be set to be able to encode jwt.
+* AHA_LOGIN_URL: URL for aha login.
+* APPROVED_TEMPLATE_ID: Id of the approved template that we need to use on purchase process.
 
 ## License
 
