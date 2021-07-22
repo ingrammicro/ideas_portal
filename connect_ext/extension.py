@@ -22,8 +22,7 @@ class IdeasPortalExtension(Extension):
     def _calculate_aha_token(self, request):
         data = request['form_data']
         jwt_payload = request['jwt_payload']
-        expiration_mins = self.config.get("TOKEN_EXP_MINUTES")
-        expiration_mins = expiration_mins if expiration_mins else self.DEFAULT_EXPIRATION_MINUTES
+        expiration_mins = self.config.get("TOKEN_EXP_MINUTES", self.DEFAULT_EXPIRATION_MINUTES)
 
         payload = {}
         payload['iat'] = int(time.time())
@@ -35,20 +34,34 @@ class IdeasPortalExtension(Extension):
 
         return encode(payload, self.config['AHA_JWT_SECRET'])
 
-    def process_asset_purchase_request(self, request):
+    def _execute_asset_approval(self, request):
         request_id = request['id']
-        self.logger.info(f"Obtained request with id {request_id}")
-
+        request_type = request['type']
+        self.logger.info(f'Obtained request type {request_type} with id {request_id}')
         template_id = self.config['APPROVED_TEMPLATE_ID']
 
         try:
-            self.client.requests[request_id]('approve').post({'template_id':
-                                                              template_id})
-            self.logger.info(f"Request {request_id} has been processed")
+            self.client.requests[request_id]('approve').post({'template_id': template_id})
+            self.logger.info(f'Request type {request_type} {request_id} has been processed')
             return ProcessingResponse.done()
         except Exception as ex:
-            self.logger.err(f"Request {request_id} raised exception {ex}")
+            self.logger.err(f'Request type {request_type} {request_id} raised exception {ex}')
             raise ex
+
+    def process_asset_purchase_request(self, request):
+        return self._execute_asset_approval(request)
+
+    def process_asset_cancel_request(self, request):
+        return self._execute_asset_approval(request)
+
+    def process_asset_change_request(self, request):
+        return self._execute_asset_approval(request)
+
+    def process_asset_resume_request(self, request):
+        return self._execute_asset_approval(request)
+
+    def process_asset_suspend_request(self, request):
+        return self._execute_asset_approval(request)
 
     def execute_product_action(self, request):
         asset_id = request['jwt_payload']['asset_id']
@@ -58,7 +71,7 @@ class IdeasPortalExtension(Extension):
         if request['method'] == 'POST':
             aha_token = self._calculate_aha_token(request)
             aha_login_url = self.config['AHA_LOGIN_URL']
-            location = f"{aha_login_url}?jwt={aha_token}"
+            location = f'{aha_login_url}?jwt={aha_token}'
             self.logger.info(
                 f'Action {action_id} for asset {asset_id} redirecting to aha login',
             )

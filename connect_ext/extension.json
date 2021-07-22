@@ -6,6 +6,10 @@
   "changelog_url": "https://example.com/CHANGELOG.md",
   "capabilities": {
     "asset_purchase_request_processing": ["pending"],
+    "asset_change_request_processing": ["pending"],
+    "asset_cancel_request_processing": ["pending"],
+    "asset_suspend_request_processing": ["pending"],
+    "asset_resume_request_processing": ["pending"],
     "product_action_execution": []
   }
 }

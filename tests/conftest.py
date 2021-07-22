@@ -5,6 +5,7 @@ from types import MethodType
 from urllib.parse import parse_qs
 
 from connect.client import ConnectClient
+from connect_ext.extension import IdeasPortalExtension
 
 from jwt import encode
 
@@ -175,3 +176,17 @@ def product_action_config_factory():
             'APPROVED_TEMPLATE_ID': "approved-temp-id",
         }
     return _product_action_request_factory
+
+
+@pytest.fixture
+def extension_for_asset_aproval_factory(sync_client_factory, response_factory, logger):
+    def _extension_for_asset_aproval_factory(http_status_code=200):
+        config = {'APPROVED_TEMPLATE_ID': 'DUMMY-TEMPLATE-ID'}
+        responses = [
+            response_factory(status=http_status_code),
+        ]
+        client = sync_client_factory(responses)
+        return IdeasPortalExtension(client, logger, config)
+
+    return _extension_for_asset_aproval_factory
+
