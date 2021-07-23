@@ -1,5 +1,5 @@
 [flake8]
-exclude = .idea,.vscode,.git,pg_data,venv,env,conftest.py
+exclude = .idea,.vscode,.git,pg_data,venv,env
 show-source = True
 max-line-length = 100
 application-import-names = smarkets

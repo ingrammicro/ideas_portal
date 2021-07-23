@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2021, Globex Corporation
+# Copyright (c) 2021, Ingram Micro Cloud
 # All rights reserved.
 #
+
 import time
 
 from connect.client.exceptions import ClientError
@@ -34,7 +35,6 @@ class IdeasPortalExtension(Extension):
         return encode(payload, self.config['AHA_JWT_SECRET'])
 
     def _execute_asset_approval(self, request):
-        print(request)
         request_id = request['id']
         request_type = request['type']
         template_id = self.config['APPROVED_TEMPLATE_ID']
@@ -42,19 +42,21 @@ class IdeasPortalExtension(Extension):
         asset_id = request['asset']['id']
 
         self.logger.info(
-            f'Provisioning asset {asset_id} of type {request_type} with id {request_id}',
+            f'Processing request {request_id} of type {request_type} for asset {asset_id} '
+            f'related with reseller {customer_id}',
         )
 
         try:
             self.client.requests[request_id]('approve').post({'template_id': template_id})
             self.logger.info(
-                f"""Successfully provisioned asset {asset_id} for reseller with id {customer_id},
-                    request {request_id}""",
+                f'Successfully processed request {request_id} of type {request_type} for asset '
+                f'{asset_id} related with reseller {customer_id}',
             )
             return ProcessingResponse.done()
         except ClientError as exception:
             self.logger.error(
-                f'Request type {request_type} {request_id} raised exception {exception}',
+                f'Error processing request {request_id} of type {request_type} for asset '
+                f'{asset_id} related with reseller {customer_id}',
             )
             if exception.status_code and exception.status_code >= 500:
                 return ProcessingResponse.reschedule()
@@ -78,13 +80,13 @@ class IdeasPortalExtension(Extension):
     def execute_product_action(self, request):
         jwt_payload = request['jwt_payload']
         asset_id = jwt_payload['asset_id']
+        location = self.config.get('DEFAULT_REDIRECT', self.DEFAULT_REDIRECT)
 
         if request['method'] == 'POST':
             data = request.get('form_data', {})
             email = data.get('email')
             if not email:
                 self.logger.error(f'SSO requested for asset {asset_id} with no email')
-                location = self.config.get('DEFAULT_REDIRECT', self.DEFAULT_REDIRECT)
                 self.logger.info(
                     f'Redirecting SSO request for asset {asset_id} to default site',
                 )
@@ -98,7 +100,6 @@ class IdeasPortalExtension(Extension):
                 )
         else:
             self.logger.error(f'SSO requested for asset {asset_id} was invoked with invalid method')
-            location = self.config.get('DEFAULT_REDIRECT', self.DEFAULT_REDIRECT)
             self.logger.info(
                 f'Redirecting SSO request for asset {asset_id} to default site',
             )

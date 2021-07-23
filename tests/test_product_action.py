@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2021, Globex Corporation
+# Copyright (c) 2021, Ingram Micro Cloud
 # All rights reserved.
 #
 
@@ -20,9 +20,11 @@ TEST_FREEZE_TIME = '2021-07-21 13:22:00'
 
 
 @pytest.mark.parametrize(
-    'request_method,redirect_url_key,query_string_pattern',
-    [('POST', 'AHA_LOGIN_URL', '\\?jwt=*'),
-     ('GET', 'DEFAULT_REDIRECT', '')],
+    ('request_method', 'redirect_url_key', 'query_string_pattern'),
+    (
+        ('POST', 'AHA_LOGIN_URL', '\\?jwt=*'),
+        ('GET', 'DEFAULT_REDIRECT', ''),
+    ),
 )
 def test_process_product_action(
     logger,
@@ -45,10 +47,11 @@ def test_process_product_action(
 
 
 @pytest.mark.parametrize(
-    'expiration_time_conf,expected_expiration',
-    [(5, TEST_FREEZE_TIME_EPOCH + 5 * 60),
-     (0, TEST_FREEZE_TIME_EPOCH),
-     ],
+    ('expiration_time_conf', 'expected_expiration'),
+    (
+        (5, TEST_FREEZE_TIME_EPOCH + 5 * 60),
+        (0, TEST_FREEZE_TIME_EPOCH),
+    ),
 )
 @freeze_time(TEST_FREEZE_TIME)
 def test_process_product_action_aha_payload(
@@ -85,22 +88,25 @@ def test_process_product_action_aha_payload(
 
 
 @pytest.mark.parametrize(
-    'form_data,redirect_url_key,query_string_pattern',
-    [({'email': '',
-       'givenName': 'John',
-       'familyName': 'Doe',
-       },
-      'DEFAULT_REDIRECT',
-      '',
-      ),
-     ({'email': 'john.doe@cloudblue.com',
-       'givenName': '',
-       'familyName': '',
-       },
-      'AHA_LOGIN_URL',
-      '\\?jwt=*',
-      ),
-     ],
+    ('form_data', 'redirect_url_key', 'query_string_pattern'),
+    (
+        (
+            {'email': '',
+             'givenName': 'John',
+             'familyName': 'Doe',
+             },
+            'DEFAULT_REDIRECT',
+            '',
+        ),
+        (
+            {'email': 'john.doe@cloudblue.com',
+             'givenName': '',
+             'familyName': '',
+             },
+            'AHA_LOGIN_URL',
+            '\\?jwt=*',
+        ),
+    ),
 )
 def test_process_product_action_aha_form_data(
     logger,

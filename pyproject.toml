@@ -1,8 +1,8 @@
 [tool.poetry]
-name = "ideas_portal"
+name = "Ingram Micro Ideas (AHA) Extension"
 version = "0.1.0"
-description = "Project description"
-authors = ["Globex Corporation"]
+description = "Extension code for Ingram Micro Ideas (AHA)"
+authors = ["Ingram MIcro Cloud"]
 license = "Apache Software License 2.0"
 packages = [
     { include = "connect_ext" }

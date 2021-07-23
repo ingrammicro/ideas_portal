@@ -1,8 +1,6 @@
 # Welcome to Ideas Portal !
 
-
-Project description
-
+Extension code for Ingram Micro Ideas (AHA)
 
 ## Service configuration
 ### Enviroment variables

@@ -1,9 +1,9 @@
 {
-  "name": "Ideas Portal",
-  "description": "Project description",
+  "name": "Ingram Micro Ideas (AHA) Extension",
+  "description": "Extension code for Ingram Micro Ideas (AHA)",
   "version": "0.1.0",
-  "readme_url": "https://example.com/README.md",
-  "changelog_url": "https://example.com/CHANGELOG.md",
+  "readme_url": "https://github.com/ingrammicro/ideas_portal/README.md",
+  "changelog_url": "https://github.com/ingrammicro/ideas_portal/CHANGELOG.md",
   "capabilities": {
     "asset_purchase_request_processing": ["pending"],
     "asset_change_request_processing": ["pending"],

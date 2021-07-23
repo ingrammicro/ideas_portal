@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+#
+# Copyright (c) 2021, Ingram Micro Cloud
+# All rights reserved.
+#
+
 import time
 from collections import namedtuple
 from collections.abc import Iterable
@@ -5,6 +11,7 @@ from types import MethodType
 from urllib.parse import parse_qs
 
 from connect.client import ConnectClient
+
 from connect_ext.extension import IdeasPortalExtension
 
 from jwt import encode
@@ -61,28 +68,38 @@ def _mock_kwargs_generator(response_iterator, url):
     mock_kwargs = {
         'match_querystring': False,
     }
+    if res.count is not None:
+        end = 0 if res.count == 0 else res.count - 1
+        mock_kwargs['status'] = 200
+        mock_kwargs['headers'] = {'Content-Range': f'items 0-{end}/{res.count}'}
+        mock_kwargs['json'] = []
 
+    mock_kwargs.update(_value_arg_validation(res))
+    return mock_kwargs
+
+
+def _value_arg_validation(res):
+    result = {}
     if isinstance(res.value, Iterable):
         count = len(res.value)
         end = 0 if count == 0 else count - 1
-        mock_kwargs['status'] = 200
-        mock_kwargs['json'] = res.value
-        mock_kwargs['headers'] = {
+        result['status'] = 200
+        result['json'] = res.value
+        result['headers'] = {
             'Content-Range': f'items 0-{end}/{count}',
         }
     elif isinstance(res.value, dict):
-        mock_kwargs['status'] = res.status or 200
-        mock_kwargs['json'] = res.value
+        result['status'] = res.status or 200
+        result['json'] = res.value
     elif res.value is None:
         if res.exception:
-            mock_kwargs['body'] = res.exception
+            result['body'] = res.exception
         else:
-            mock_kwargs['status'] = res.status
+            result['status'] = res.status
     else:
-        mock_kwargs['status'] = res.status or 200
-        mock_kwargs['body'] = str(res.value)
-
-    return mock_kwargs
+        result['status'] = res.status or 200
+        result['body'] = str(res.value)
+    return result
 
 
 @pytest.fixture
@@ -149,7 +166,7 @@ def product_action_request_factory():
         jwt_payload = {
             'exp': time.time(),
             'asset_id': 'AS-1111-2222-3333',
-            'action_id': 'sso_action'
+            'action_id': 'sso_action',
         }
 
         connect_token = encode(jwt_payload, "THE_SECRET")
@@ -190,4 +207,3 @@ def extension_for_asset_approval_factory(sync_client_factory, response_factory, 
         return IdeasPortalExtension(client, logger, config)
 
     return _extension_for_asset_aproval_factory
-
