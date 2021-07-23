@@ -1,0 +1,8 @@
+*.pyc
+htmlcov
+.coverage
+coverage.xml
+dist
+env
+.DS_Store
+.vscode

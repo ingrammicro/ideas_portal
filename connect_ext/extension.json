@@ -1,0 +1,15 @@
+{
+  "name": "Ingram Micro Ideas (AHA) Extension",
+  "description": "Extension code for Ingram Micro Ideas (AHA)",
+  "version": "0.1.0",
+  "readme_url": "https://github.com/ingrammicro/ideas_portal/README.md",
+  "changelog_url": "https://github.com/ingrammicro/ideas_portal/CHANGELOG.md",
+  "capabilities": {
+    "asset_purchase_request_processing": ["pending"],
+    "asset_change_request_processing": ["pending"],
+    "asset_cancel_request_processing": ["pending"],
+    "asset_suspend_request_processing": ["pending"],
+    "asset_resume_request_processing": ["pending"],
+    "product_action_execution": []
+  }
+}
