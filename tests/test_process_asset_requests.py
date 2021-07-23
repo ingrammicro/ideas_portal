@@ -6,85 +6,154 @@
 
 import connect
 
-from connect_ext.extension import IdeasPortalExtension
-
 import pytest
 
 
-def _execute_asset_process_test(request_type, extension_for_asset_aproval_factory, http_status=200):
-    request = {'id': 1, 'status': 'pending', 'type': request_type}
-    ext = extension_for_asset_aproval_factory(http_status)
+class ResponseStatus:
+    SUCCESS = 'success'
+    RESCHEDULE = 'reschedule'
+
+
+def _execute_asset_process_test(
+    request_type,
+    extension_for_asset_approval_factory,
+    http_status=200,
+    exception=None,
+):
+    request = {
+        'id': 1,
+        'status': 'pending',
+        'type': request_type,
+        'asset': {'id': 'AS-1234-1234-1234', 'tiers': {'customer': {'external_id': '9999999'}}}}
+    ext = extension_for_asset_approval_factory(http_status, exception)
     return getattr(ext, f'process_asset_{request_type}_request')(request)
 
 
-def test_process_asset_purchase_request(extension_for_asset_aproval_factory):
-    result = _execute_asset_process_test('purchase', extension_for_asset_aproval_factory)
-    assert result.status == 'success'
-
-
-def test_process_asset_cancel_request(extension_for_asset_aproval_factory):
-    result = _execute_asset_process_test('cancel', extension_for_asset_aproval_factory)
-    assert result.status == 'success'
-
-
-def test_process_asset_change_request(extension_for_asset_aproval_factory):
-    result = _execute_asset_process_test('change', extension_for_asset_aproval_factory)
-    assert result.status == 'success'
-
-
-def test_process_asset_resume_request(extension_for_asset_aproval_factory):
-    result = _execute_asset_process_test('resume', extension_for_asset_aproval_factory)
-    assert result.status == 'success'
-
-
-def test_process_asset_suspend_request(extension_for_asset_aproval_factory):
-    result = _execute_asset_process_test('suspend', extension_for_asset_aproval_factory)
-    assert result.status == 'success'
-
-
-def test_process_asset_purchase_request_raise_error(extension_for_asset_aproval_factory):
-    with pytest.raises(connect.client.exceptions.ClientError) as excinfo:
-        _execute_asset_process_test('purchase', extension_for_asset_aproval_factory, 400)
-        assert '400 Bad Request' in excinfo.value
-
-
-def test_process_asset_cancel_request_raise_error(extension_for_asset_aproval_factory):
-    with pytest.raises(connect.client.exceptions.ClientError) as excinfo:
-        _execute_asset_process_test('cancel', extension_for_asset_aproval_factory, 400)
-        assert '400 Bad Request' in excinfo.value
-
-
-def test_process_asset_change_request_raise_error(extension_for_asset_aproval_factory):
-    with pytest.raises(connect.client.exceptions.ClientError) as excinfo:
-        _execute_asset_process_test('change', extension_for_asset_aproval_factory, 400)
-        assert '400 Bad Request' in excinfo.value
-
-
-def test_process_asset_resume_request_raise_error(extension_for_asset_aproval_factory):
-    with pytest.raises(connect.client.exceptions.ClientError) as excinfo:
-        _execute_asset_process_test('resume', extension_for_asset_aproval_factory, 400)
-        assert '400 Bad Request' in excinfo.value
-
-
-def test_process_asset_suspend_request_raise_error(extension_for_asset_aproval_factory):
-    with pytest.raises(connect.client.exceptions.ClientError) as excinfo:
-        _execute_asset_process_test('suspend', extension_for_asset_aproval_factory, 400)
-        assert '400 Bad Request' in excinfo.value
-
-
-def test_process_asset_purchase_request_raise_500_error(
-    sync_client_factory,
-    response_factory,
-    logger,
+@pytest.mark.parametrize(
+    'mock_http_status,result_status',
+    [(200, ResponseStatus.SUCCESS),
+     (500, ResponseStatus.RESCHEDULE),
+     (501, ResponseStatus.RESCHEDULE),
+     ],
+)
+def test_process_asset_purchase_request(
+    extension_for_asset_approval_factory,
+    mock_http_status,
+    result_status,
 ):
-    config = {}
-    request = {'id': 1, 'status': 'pending'}
-    responses = [
-        response_factory(status=400),
-    ]
-    client = sync_client_factory(responses)
-    ext = IdeasPortalExtension(client, logger, config)
+    result = _execute_asset_process_test(
+        'purchase',
+        extension_for_asset_approval_factory,
+        http_status=mock_http_status,
+    )
+    assert result.status == result_status
 
-    with pytest.raises(Exception) as excinfo:
-        ext.process_asset_purchase_request(request)
-        assert '500 Server Error' in excinfo.value
+
+@pytest.mark.parametrize(
+    'mock_http_status,result_status',
+    [(200, ResponseStatus.SUCCESS),
+     (500, ResponseStatus.RESCHEDULE),
+     (501, ResponseStatus.RESCHEDULE),
+     ],
+)
+def test_process_asset_cancel_request(
+    extension_for_asset_approval_factory,
+    mock_http_status,
+    result_status,
+):
+    result = _execute_asset_process_test(
+        'cancel',
+        extension_for_asset_approval_factory,
+        http_status=mock_http_status,
+    )
+    assert result.status == result_status
+
+
+@pytest.mark.parametrize(
+    'mock_http_status,result_status',
+    [(200, ResponseStatus.SUCCESS),
+     (500, ResponseStatus.RESCHEDULE),
+     (501, ResponseStatus.RESCHEDULE),
+     ],
+)
+def test_process_asset_change_request(
+    extension_for_asset_approval_factory,
+    mock_http_status,
+    result_status,
+):
+    result = _execute_asset_process_test(
+        'change',
+        extension_for_asset_approval_factory,
+        http_status=mock_http_status,
+    )
+    assert result.status == result_status
+
+
+@pytest.mark.parametrize(
+    'mock_http_status,result_status',
+    [(200, ResponseStatus.SUCCESS),
+     (500, ResponseStatus.RESCHEDULE),
+     (501, ResponseStatus.RESCHEDULE),
+     ],
+)
+def test_process_asset_resume_request(
+    extension_for_asset_approval_factory,
+    mock_http_status,
+    result_status,
+):
+    result = _execute_asset_process_test(
+        'resume',
+        extension_for_asset_approval_factory,
+        http_status=mock_http_status,
+    )
+    assert result.status == result_status
+
+
+@pytest.mark.parametrize(
+    'mock_http_status,result_status',
+    [(200, ResponseStatus.SUCCESS),
+     (500, ResponseStatus.RESCHEDULE),
+     (501, ResponseStatus.RESCHEDULE),
+     ],
+)
+def test_process_asset_suspend_request(
+    extension_for_asset_approval_factory,
+    mock_http_status,
+    result_status,
+):
+    result = _execute_asset_process_test(
+        'suspend',
+        extension_for_asset_approval_factory,
+        http_status=mock_http_status,
+    )
+    assert result.status == result_status
+
+
+def test_process_asset_purchase_request_raise_error(extension_for_asset_approval_factory):
+    with pytest.raises(connect.client.exceptions.ClientError) as excinfo:
+        _execute_asset_process_test('purchase', extension_for_asset_approval_factory, 400)
+        assert '400 Bad Request' in excinfo.value
+
+
+def test_process_asset_cancel_request_raise_error(extension_for_asset_approval_factory):
+    with pytest.raises(connect.client.exceptions.ClientError) as excinfo:
+        _execute_asset_process_test('cancel', extension_for_asset_approval_factory, 400)
+        assert '400 Bad Request' in excinfo.value
+
+
+def test_process_asset_change_request_raise_error(extension_for_asset_approval_factory):
+    with pytest.raises(connect.client.exceptions.ClientError) as excinfo:
+        _execute_asset_process_test('change', extension_for_asset_approval_factory, 400)
+        assert '400 Bad Request' in excinfo.value
+
+
+def test_process_asset_resume_request_raise_error(extension_for_asset_approval_factory):
+    with pytest.raises(connect.client.exceptions.ClientError) as excinfo:
+        _execute_asset_process_test('resume', extension_for_asset_approval_factory, 400)
+        assert '400 Bad Request' in excinfo.value
+
+
+def test_process_asset_suspend_request_raise_error(extension_for_asset_approval_factory):
+    with pytest.raises(connect.client.exceptions.ClientError) as excinfo:
+        _execute_asset_process_test('suspend', extension_for_asset_approval_factory, 400)
+        assert '400 Bad Request' in excinfo.value

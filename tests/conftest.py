@@ -144,7 +144,8 @@ def sync_client_factory():
 
 @pytest.fixture
 def product_action_request_factory():
-    def _product_action_request_factory(method):
+    def _product_action_request_factory(method, form_data=None):
+        form_data = form_data if form_data else {}
         jwt_payload = {
             'exp': time.time(),
             'asset_id': 'AS-1111-2222-3333',
@@ -156,9 +157,9 @@ def product_action_request_factory():
             'method': method,
             'querystring': {'jwt': [connect_token]},
             'form_data': {
-                'email': 'john.doe@example.com',
-                'givenName': 'John',
-                'familyName': 'Doe',
+                'email': form_data.get('email', 'john.doe@example.com'),
+                'givenName': form_data.get('givenName', 'John'),
+                'familyName': form_data.get('familyName', 'Doe'),
             },
             'jwt_payload': jwt_payload,
         }
@@ -167,11 +168,11 @@ def product_action_request_factory():
 
 @pytest.fixture
 def product_action_config_factory():
-    def _product_action_request_factory():
+    def _product_action_request_factory(expiration_time_conf=1):
         return {
             'AHA_LOGIN_URL': 'https://imc.ideas.aha.io/auth/jwt/callback/',
             'AHA_JWT_SECRET': "AHA_SECRET_KEY",
-            'TOKEN_EXP_MINUTES': 1,
+            'TOKEN_EXP_MINUTES': expiration_time_conf,
             'DEFAULT_REDIRECT': 'https://ingrammicrocloud.com',
             'APPROVED_TEMPLATE_ID': "approved-temp-id",
         }
@@ -179,11 +180,11 @@ def product_action_config_factory():
 
 
 @pytest.fixture
-def extension_for_asset_aproval_factory(sync_client_factory, response_factory, logger):
-    def _extension_for_asset_aproval_factory(http_status_code=200):
+def extension_for_asset_approval_factory(sync_client_factory, response_factory, logger):
+    def _extension_for_asset_aproval_factory(http_status_code=200, exception=None):
         config = {'APPROVED_TEMPLATE_ID': 'DUMMY-TEMPLATE-ID'}
         responses = [
-            response_factory(status=http_status_code),
+            response_factory(status=http_status_code, exception=exception),
         ]
         client = sync_client_factory(responses)
         return IdeasPortalExtension(client, logger, config)
