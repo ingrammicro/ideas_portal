@@ -3,7 +3,7 @@ version: '3'
 services:
   ideas_portal_dev:
     container_name: ideas_portal_dev
-    image: cloudblueconnect/connect-extension-runner:23.4
+    image: cloudblueconnect/connect-extension-runner:26.38
     command: cextrun -d
     volumes: 
       - .:/extension
@@ -12,7 +12,7 @@ services:
 
   ideas_portal_bash:
     container_name: ideas_portal_bash
-    image: cloudblueconnect/connect-extension-runner:23.4
+    image: cloudblueconnect/connect-extension-runner:26.38
     working_dir: /extension
     command: /bin/bash
     stdin_open: true
@@ -24,7 +24,7 @@ services:
 
   ideas_portal_test:
     container_name: ideas_portal_test
-    image: cloudblueconnect/connect-extension-runner:23.4
+    image: cloudblueconnect/connect-extension-runner:26.38
     working_dir: /extension
     command: /bin/bash -c "poetry install && pytest --verbose --cov=connect_ext --cov-report=html --cov-report=term-missing:skip-covered"
     volumes:
