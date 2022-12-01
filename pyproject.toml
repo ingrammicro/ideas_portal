@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "Ingram Micro Ideas (AHA) Extension"
+name = "Ingram-Micro-Ideas-Extension"
 version = "0.1.0"
 description = "Extension code for Ingram Micro Ideas (AHA)"
 authors = ["Ingram MIcro Cloud"]
