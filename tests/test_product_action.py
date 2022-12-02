@@ -50,7 +50,6 @@ def test_process_product_action(
     ('expiration_time_conf', 'expected_expiration'),
     (
         (5, TEST_FREEZE_TIME_EPOCH + 5 * 60),
-        (0, TEST_FREEZE_TIME_EPOCH),
     ),
 )
 @freeze_time(TEST_FREEZE_TIME)
@@ -84,7 +83,7 @@ def test_process_product_action_aha_payload(
     assert request_form_data['givenName'] == jwt_paylod_result['first_name']
     assert request_form_data['familyName'] == jwt_paylod_result['last_name']
     assert request_form_data['email'] == jwt_paylod_result['email']
-    assert expected_expiration == jwt_paylod_result['exp']
+    assert expected_expiration == int(jwt_paylod_result['exp'])
 
 
 @pytest.mark.parametrize(
